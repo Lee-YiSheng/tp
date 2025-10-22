@@ -39,31 +39,22 @@ public abstract class Entry {
     public abstract String toStorageString();
 
     /**
-     * Factory from storage line; dispatch by type token.
+     * Factory from storage line; dispatches to the correct parser via the EntryType enum.
      */
     public static Entry fromStorageString(String line) {
         String[] parts = line.split("\\|", 2); // TYPE|payload
-        if (parts.length == 0) {
-            throw new IllegalArgumentException("Bad line: " + line);
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Bad storage line: " + line);
         }
-        switch (parts[0]) {
-        case "NOTE":
-            return NoteEntry.fromStorage(line);
 
-        case "MILK":
-            return MilkEntry.fromStorage(line);
-
-        case "WORKOUT":
-            return WorkoutEntry.fromStorage(line);
-
-        case "MEAL":
-            return MealEntry.fromStorage(line);
-
-        // future: case "MEAL": return MealEntry.fromStorage(line);
-        case "WEIGHT":
-            return WeightEntry.fromStorage(line);
-        default:
-            throw new IllegalArgumentException("Unknown type: " + parts[0]);
+        String typeToken = parts[0];
+        try {
+            // Use the enum to find the correct type and call its parsing function.
+            EntryType entryType = EntryType.valueOf(typeToken);
+            return entryType.parseFromStorage(line);
+        } catch (IllegalArgumentException e) {
+            // This runs if the typeToken doesn't match any enum constant.
+            throw new IllegalArgumentException("Unknown entry type in storage file: " + typeToken);
         }
     }
 }

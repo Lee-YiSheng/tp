@@ -1,24 +1,35 @@
 package seedu.mama.model;
 
+import java.util.function.Function;
+
 /**
- * Defines the valid types of entries in the application.
+ * Defines the valid types of entries, their classes, and their storage parsing logic.
  */
 public enum EntryType {
-    MEAL(MealEntry.class),
-    WORKOUT(WorkoutEntry.class),
-    MILK(MilkEntry.class),
-    WEIGHT(WeightEntry.class);
+    MEAL(MealEntry::fromStorage),
+    WORKOUT(WorkoutEntry::fromStorage),
+    MILK(MilkEntry::fromStorage),
+    WEIGHT(WeightEntry::fromStorage),
+    NOTE(NoteEntry::fromStorage);
 
-    // This field can be used for more advanced logic later if needed
-    public final Class<? extends Entry> entryClass;
+    // This is a function that takes a String and returns an Entry.
+    private final Function<String, Entry> storageParser;
 
-    EntryType(Class<? extends Entry> entryClass) {
-        this.entryClass = entryClass;
+    EntryType(Function<String, Entry> storageParser) {
+        this.storageParser = storageParser;
+    }
+
+    /**
+     * Parses a line from storage using the correct method for this entry type.
+     * @param line The string line from the storage file.
+     * @return The parsed Entry object.
+     */
+    public Entry parseFromStorage(String line) {
+        return this.storageParser.apply(line);
     }
 
     /**
      * Returns a comma-separated list of all valid type names.
-     * e.g., "meal, workout, milk, weight"
      */
     public static String getValidTypesString() {
         return String.join(", ",
